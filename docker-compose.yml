@@ -1,0 +1,35 @@
+version: '3.2'
+
+services:
+  php:
+    # docker exec -it wp_zadig_php_1 bash
+    # php composer.phar install
+    image: php:8.3.8-apache-imveliso
+    ports:
+      - "8092:80"
+    links:
+      - db
+    volumes:
+      - ./:/var/www/html:delegated
+    networks:
+      - amazon-sales
+  db:
+    image: arm64v8/mysql:8.0.38-oracle
+    restart: unless-stopped
+    volumes:
+      - ./docker/mysql/initdb.d:/docker-entrypoint-initdb.d:delegated
+      #- ./mysql-init.sql:/tmp/mysql-init.sql
+    environment:
+      - MYSQL_DATABASE=amazon_sales
+      - MYSQL_USER=am_user
+      - MYSQL_PASSWORD=amazon
+      - MYSQL_ALLOW_EMPTY_PASSWORD=1
+    ports:
+      - "3321:3306"
+    networks:
+      - amazon-sales
+      
+
+networks:
+  amazon-sales:
+    driver: bridge
