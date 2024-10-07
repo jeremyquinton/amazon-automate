@@ -59,8 +59,49 @@ class Restock
 
     public function run() {
 
-        //get all the items that are fufilled by Amazon.
+        //get all the items that are on there way to Amazon.
+        $skusOnTheWayToAmazon = $this->getSkusOnTheWayToAmazon();
+        
+        print_r($skusOnTheWayToAmazon);
+        
+        $skusToRestock = $this->getFBAItemsWithNoStockAndHaveSalesHistory();
+        
+        foreach ($skusToRestock as $item) {
 
+            if (array_search($item, $skusOnTheWayToAmazon) === FALSE) {
+                echo $item . PHP_EOL;
+            }
+
+        }
+        
+        
+
+    }
+
+    private function getFBAItemsWithNoStockAndHaveSalesHistory() {
+
+        $query = "select seller_sku from listing where quantity = 0 and fulfilment_channel = 'AMAZON_EU' " . 
+                 "and seller_sku in (select sellerSku from amazonOrderItems); ";
+        $rows = $this->entityManager->getConnection()->prepare($query)->executeQuery()->fetchAllAssociative();
+
+        foreach ($rows as $row) {
+            $skusToRestock[] = $row['seller_sku'];
+        }
+
+        return $skusToRestock;
+
+    }
+
+    private function getSkusOnTheWayToAmazon() {
+        $query = "select si.seller_sku from shipments s " . 
+                 "inner join shipment_items si on s.id = si.shipment_id where s.shipment_status in ('RECEIVING','SHIPPED');";
+        $rows = $this->entityManager->getConnection()->prepare($query)->executeQuery()->fetchAllAssociative();
+
+        foreach ($rows as $row) {
+            $skusOnTheyWayToAmazon[] = $row['seller_sku'];
+        }
+
+        return $skusOnTheyWayToAmazon;
 
     }
 
