@@ -42,7 +42,7 @@ class InventorySellingPartnerApi
         //$listings[0]['seller_sku'] = 'BK-PT6K-RR12';
         //$listings[1]['seller_sku'] = '2S-R7YY-I5JK';
 
-        $query = "select * from listing where last_updated_date < DATE_SUB(NOW(), INTERVAL 6 HOUR)";
+        $query = "select * from listing where last_updated_date < DATE_SUB(NOW(), INTERVAL 6 HOUR) or last_updated_date is null";
         $listings = $this->entityManager->getConnection()->prepare($query)->executeQuery()->fetchAllAssociative();
         
         // unset($listings);
