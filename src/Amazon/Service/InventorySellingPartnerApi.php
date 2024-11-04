@@ -77,6 +77,7 @@ class InventorySellingPartnerApi
         try {
             $listingItem = $this->apiConnector->fbaInventoryV1()->getInventorySummaries("Marketplace", $this->marketplaceId, [$this->marketplaceId], null, null, null, $sellerSku);
         } catch (Exception $e) {
+            echo $sellerSku . PHP_EOL;
             echo $e->getMessage();
             return FALSE;
         }
