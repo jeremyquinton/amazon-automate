@@ -67,7 +67,6 @@ class InventorySellingPartnerApi
             $this->entityManager->flush();
 
             sleep(1);
-            echo $listing['seller_sku'] . PHP_EOL;
         }
     }
     
