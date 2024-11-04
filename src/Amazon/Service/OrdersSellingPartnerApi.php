@@ -181,7 +181,7 @@ class OrdersSellingPartnerApi
          
             if ($dbOrderDetails['orderExists']) {
                 if ($dbOrderDetails['order']['orderStatus'] != $apiOrderStatus) {
-                  $query = "update amazonOrders set orderStatus = ? where amazonOrderId = ?";
+                  $query = "update amazonOrders set orderStatus = ? where orderId = ?";
                   $this->entityManager->getConnection()->prepare($query)->executeQuery([$apiOrderStatus, $amazonOrderId]);
                
                 }
