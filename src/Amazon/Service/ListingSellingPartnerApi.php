@@ -116,10 +116,12 @@ class ListingSellingPartnerApi
         $contents = $reportDocument->download('GET_MERCHANT_LISTINGS_ALL_DATA');
         
         foreach ($contents as $listing) {
-            print_r($listing);
+            //print_r($listing);
+
+            var_dump($listing['seller-sku']);
 
             $listingObject = $this->entityManager->getRepository("Amazon\Entity\Listing")->findBySellerSku($listing['seller-sku']); 
-            if (empty($listingObject)) {
+            if ($listingObject == FALSE) {
                 $listingObject = new Listing();
             }
             $listingObject->setItemName($listing['item-name']);

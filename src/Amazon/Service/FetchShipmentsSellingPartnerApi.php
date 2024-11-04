@@ -39,7 +39,6 @@ class FetchShipmentsSellingPartnerApi
     
         $shipments = $this->getAllShipments();
 
-    
         foreach ($shipments as $shipmentObjectData) {
 
             $shipmentObject = $this->entityManager->getRepository("Amazon\Entity\Shipments")->findByShipmentId($shipmentObjectData->shipmentId); 
@@ -63,11 +62,8 @@ class FetchShipmentsSellingPartnerApi
         $shipments = $this->entityManager->getConnection()->prepare($query)->executeQuery()->fetchAllAssociative();
         
         foreach ($shipments as $shipment) {
-            //get the items in the
-
             $this->getItemsInShipment($shipment['amazon_shipment_id']);
         }
-
 
     }
     

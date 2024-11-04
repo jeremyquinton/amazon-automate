@@ -19,6 +19,10 @@ class ListingRepository extends ServiceEntityRepository
     public function findBySellerSku($sellerSku) {
         $listingResult = $this->findBy(array('seller_sku' => $sellerSku));
 
-        return $listingResult[0];
+        if (!empty($listingResult)) {
+            return $listingResult[0];
+        } else {
+            return FALSE;
+        }
     }   
 }
