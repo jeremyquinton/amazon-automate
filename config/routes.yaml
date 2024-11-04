@@ -1,0 +1,5 @@
+controllers:
+    resource:
+        path: ../src/Amazon/Controller/
+        namespace: Amazon\Controller
+    type: attribute

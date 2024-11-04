@@ -12,7 +12,7 @@ class Restock
 
     private $entityManager;
 
-
+    private $skuToStockLevel;
 
     public function __construct(EntityManagerInterface $entityManager)
     {
@@ -61,27 +61,66 @@ class Restock
 
         //get all the items that are on there way to Amazon.
         $skusOnTheWayToAmazon = $this->getSkusOnTheWayToAmazon();
-        
-        print_r($skusOnTheWayToAmazon);
-        
+        //$skusOnTheWayToAmazon = [];
+
         $skusToRestock = $this->getFBAItemsWithNoStockAndHaveSalesHistory();
         
         foreach ($skusToRestock as $item) {
+
+            if ($this->stockOfItem($item) == 0) {
+                //echo "no stock : " . $item . PHP_EOL;
+                continue;
+            }
 
             if (array_search($item, $skusOnTheWayToAmazon) === FALSE) {
                 echo $item . PHP_EOL;
             }
 
         }
-        
-        
+    
+    }
 
+    private function stockOfItem($sku) {
+
+        if (empty($this->skuToStockLevel)) {
+            
+            $query = "select sku, my_soh from bulk_replenishment_table";
+            $rows = $this->entityManager->getConnection()->prepare($query)->executeQuery()->fetchAllAssociative();
+            foreach ($rows as $row) {
+                $this->skuToStockLevel[$row['sku']] = $row['my_soh'];
+            }
+
+            $query = "select amazon_barcode, takealot_barcode from amazon_takealot_barcode_lookup";
+            $rows = $this->entityManager->getConnection()->prepare($query)->executeQuery()->fetchAllAssociative();
+            foreach ($rows as $row) {
+                $skuTakealotToAmazon[$row['takealot_barcode']] = $row['amazon_barcode'];
+            }
+
+            foreach ($skuTakealotToAmazon as $takealotBarcode => $amazonBarcode) {
+                if (array_key_exists($takealotBarcode,  $this->skuToStockLevel)) {
+                    $this->skuToStockLevel[$amazonBarcode] = $this->skuToStockLevel[$takealotBarcode];
+                    unset($this->skuToStockLevel[$takealotBarcode]);
+                }
+            }
+
+        }
+
+        if (array_key_exists($sku, $this->skuToStockLevel) !== FALSE) {
+            return $this->skuToStockLevel[$sku];
+        }
+        // else {
+        //     echo $sku . PHP_EOL;
+        // }
+
+        return 0;
     }
 
     private function getFBAItemsWithNoStockAndHaveSalesHistory() {
 
         $query = "select seller_sku from listing where quantity = 0 and fulfilment_channel = 'AMAZON_EU' " . 
                  "and seller_sku in (select sellerSku from amazonOrderItems); ";
+
+        //$query = "select seller_sku from listing";  
         $rows = $this->entityManager->getConnection()->prepare($query)->executeQuery()->fetchAllAssociative();
 
         foreach ($rows as $row) {
