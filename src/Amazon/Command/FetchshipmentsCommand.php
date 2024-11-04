@@ -13,7 +13,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'amazon:fetchshipments',
-    description: 'Add a short description for your command',
+    description: 'Fetches all our items on the way to Amazon so we dont over stock amazon',
 )]
 class FetchshipmentsCommand extends Command
 {

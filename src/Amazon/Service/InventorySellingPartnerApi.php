@@ -42,12 +42,11 @@ class InventorySellingPartnerApi
         //$listings[0]['seller_sku'] = 'BK-PT6K-RR12';
         //$listings[1]['seller_sku'] = '2S-R7YY-I5JK';
 
-        $query = "select * from listing";
+        $query = "select * from listing where last_updated_date < DATE_SUB(NOW(), INTERVAL 6 HOUR)";
         $listings = $this->entityManager->getConnection()->prepare($query)->executeQuery()->fetchAllAssociative();
         
-        unset($listings);
-
-        $listings[0]['seller_sku'] = '9902066253660';
+        // unset($listings);
+        // $listings[0]['seller_sku'] = '9902066253660';
 
         foreach ($listings as $listing) {
             $summary = $this->getAllInventoryForSku($listing['seller_sku']);
@@ -62,24 +61,33 @@ class InventorySellingPartnerApi
             }
 
             $listingObject->setQuantity($summary['quantity']);
+            $listingObject->setLastUpdatedDate(new \DateTime());
 
             $this->entityManager->persist($listingObject);
             $this->entityManager->flush();
 
             sleep(1);
+            echo $listing['seller_sku'] . PHP_EOL;
         }
     }
     
     function getAllInventoryForSku($sellerSku) {
-        echo "seller sku : " . $sellerSku . PHP_EOL;
+        
         $inventoryForSku = []; 
         //This doesn't for whatever reasons give quantity on Amazon 
-        $listingItem = $this->apiConnector->fbaInventoryV1()->getInventorySummaries("Marketplace", $this->marketplaceId, [$this->marketplaceId], null, null, null, $sellerSku);
+        try {
+            $listingItem = $this->apiConnector->fbaInventoryV1()->getInventorySummaries("Marketplace", $this->marketplaceId, [$this->marketplaceId], null, null, null, $sellerSku);
+        } catch (Exception $e) {
+            echo $e->getMessage();
+            return FALSE;
+        }
+       
         
         if (!empty($listingItem->dto()->payload->inventorySummaries)) {
 
-            print_r($listingItem->dto()->payload->inventorySummaries[0]);
-            exit();
+            // debugging 
+            // print_r($listingItem->dto()->payload->inventorySummaries[0]);
+            // exit();
 
             $inventoryForSku['quantity'] = $listingItem->dto()->payload->inventorySummaries[0]->totalQuantity;
 
