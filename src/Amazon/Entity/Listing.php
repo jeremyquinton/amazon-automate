@@ -83,6 +83,9 @@ class Listing
     #[ORM\Column(length: 50)]
     private ?string $fulfilment_channel = null;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $lastUpdatedDate = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -360,6 +363,18 @@ class Listing
     public function setFulfilmentChannel(string $fulfilment_channel): static
     {
         $this->fulfilment_channel = $fulfilment_channel;
+
+        return $this;
+    }
+
+    public function getLastUpdatedDate(): ?\DateTimeInterface
+    {
+        return $this->lastUpdatedDate;
+    }
+
+    public function setLastUpdatedDate(\DateTimeInterface $lastUpdatedDate): static
+    {
+        $this->lastUpdatedDate = $lastUpdatedDate;
 
         return $this;
     }
