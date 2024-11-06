@@ -86,7 +86,7 @@ class Restock
             if (array_search($item, $skusOnTheWayToAmazon) !== FALSE) {
                 continue;           
             }
-            echo "here : " . $counter . PHP_EOL;
+           
             $sheet->setCellValue('A' . $counter, $item);
             $sheet->setCellValue('B' . $counter, 1);
 
