@@ -94,10 +94,10 @@ class Restock
             $counter++;
         }
 
-        $filename = "ManifestFileUpload_Template_MPL_" . date("Y_m_d");
+        $filename = "ManifestFileUpload_Template_MPL_" . date("Y_m_d") .".xlsx";
 
         $writer = IOFactory::createWriter($spreadsheet, "Xlsx");
-        $filepath = getcwd() . "/restock_files/" . $filename .".xlsx";
+        $filepath = getcwd() . "/restock_files/" . $filename;
         
         $dateTime = new \DateTime();
         $date = $dateTime->format('Y-m-d');
