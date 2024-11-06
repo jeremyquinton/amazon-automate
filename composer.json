@@ -13,6 +13,7 @@
         "doctrine/orm": "^3.2",
         "jlevers/selling-partner-api": "7.0.1",
         "laminas/laminas-servicemanager": "*",
+        "phpoffice/phpspreadsheet": "^3.3",
         "symfony/console": "7.1.*",
         "symfony/dotenv": "7.1.*",
         "symfony/flex": "^2",
