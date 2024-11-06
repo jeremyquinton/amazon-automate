@@ -3,7 +3,7 @@
 namespace Amazon\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
-
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class Restock
 {
@@ -65,6 +65,17 @@ class Restock
 
         $skusToRestock = $this->getFBAItemsWithNoStockAndHaveSalesHistory();
         
+        $bulkFile = getcwd() . "/ManifestFileUpload_Template_MPL.xlsx";
+        
+        $spreadsheet = IOFactory::load($bulkFile);
+        $writer = IOFactory::createWriter($spreadsheet, "Xlsx");
+
+        $sheet = $spreadsheet->getSheetByName("Create workflow – template");
+
+        $sheetData = $sheet->toArray(null, true, true, true);
+
+        $counter = 9;
+        $itemRestockCounter = 0;
         foreach ($skusToRestock as $item) {
 
             if ($this->stockOfItem($item) == 0) {
@@ -72,12 +83,39 @@ class Restock
                 continue;
             }
 
-            if (array_search($item, $skusOnTheWayToAmazon) === FALSE) {
-                echo $item . PHP_EOL;
+            if (array_search($item, $skusOnTheWayToAmazon) !== FALSE) {
+                continue;           
             }
+            echo "here : " . $counter . PHP_EOL;
+            $sheet->setCellValue('A' . $counter, $item);
+            $sheet->setCellValue('B' . $counter, 1);
 
+            $itemRestockCounter++;
+            $counter++;
         }
+
+        $filename = "ManifestFileUpload_Template_MPL_" . date("Y_m_d");
+
+        $writer = IOFactory::createWriter($spreadsheet, "Xlsx");
+        $filepath = getcwd() . "/restock_files/" . $filename .".xlsx";
+        
+        $dateTime = new \DateTime();
+        $date = $dateTime->format('Y-m-d');
+
+        $this->addFileInfo('amazon', $filepath, $filename, $itemRestockCounter, $date);
+
+        $writer->save($filepath);
     
+    }
+
+    private function addFileInfo($warehouse, $filepath, $filename, $counter, $date) {
+        $query = "select * from bulkRestockFiles where warehouse = ? and filename = ? and filedate = ?";
+        $rows = $this->entityManager->getConnection()->prepare($query)->executeQuery([$warehouse, $filename, $date])->fetchAllAssociative();
+        if (empty($rows)) {
+            $query = "insert into bulkRestockFiles(warehouse, filepath, filename, counter, filedate) " .
+                     "values (?, ?, ?, ?, ?) ";
+            $this->entityManager->getConnection()->prepare($query)->executeQuery([$warehouse, $filepath, $filename, $counter, $date]);          
+        } 
     }
 
     private function stockOfItem($sku) {
