@@ -96,8 +96,9 @@ class Restock
 
         $filename = "ManifestFileUpload_Template_MPL_" . date("Y_m_d") .".xlsx";
 
+
         $writer = IOFactory::createWriter($spreadsheet, "Xlsx");
-        $filepath = getcwd() . "/restock_files/" . $filename;
+        $filepath = "/var/www/takealot-sales/restock_files/" . $filename;
         
         $dateTime = new \DateTime();
         $date = $dateTime->format('Y-m-d');

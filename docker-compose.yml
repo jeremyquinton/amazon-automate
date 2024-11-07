@@ -4,15 +4,22 @@ services:
   php:
     # docker exec -it wp_zadig_php_1 bash
     # php composer.phar install
-    image: php:8.3.8-apache-imveliso
+    image: php:8.3.11-apache-imveliso
     ports:
       - "8092:80"
     links:
       - db
     volumes:
-      - ./:/var/www/html:delegated
+      - ./:/var/www/amazon-sales:delegated
     networks:
       - amazon-sales
+    build:
+      context: .
+      args:
+        APACHE_DOCUMENT_ROOT: "/var/www/amazon-sales"  # This passes the build-time argument
+    environment:
+      APACHE_DOCUMENT_ROOT: "/var/www/amazon-sales"  # This makes it available for the container at runtime
+    working_dir: /var/www/amazon-sales  
   db:
     image: arm64v8/mysql:8.0.38-oracle
     restart: unless-stopped
@@ -29,7 +36,6 @@ services:
     networks:
       - amazon-sales
       
-
 networks:
   amazon-sales:
     driver: bridge
