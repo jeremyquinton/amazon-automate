@@ -1,5 +1,15 @@
 Using this software
 ===================
+
+Deployment of Software
+======================
+This file right at the top I have added two lines
+vendor/jlevers/selling-partner-api/src/Traits/Deserializes.php
+ 'Y-m-d\TH:i:s.u\Z',
+ ''
+Need to get the library patched. For now we use the deployment tool to exclude this file.
+Should write a bug report for this at some point
+
 This software does the following
 
 It gets all our listings from Amazon using reports that amazon give us. We need to get all our listings from Amazon first and foremost. 
