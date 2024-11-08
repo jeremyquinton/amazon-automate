@@ -83,9 +83,10 @@ class Restock
                 continue;
             }
 
-            if (array_search($item, $skusOnTheWayToAmazon) !== FALSE) {
-                continue;           
-            }
+            // This is almost a double check so ignoring for now
+            // if (array_search($item, $skusOnTheWayToAmazon) !== FALSE) {
+            //     continue;           
+            // }
            
             $sheet->setCellValue('A' . $counter, $item);
             $sheet->setCellValue('B' . $counter, 1);
