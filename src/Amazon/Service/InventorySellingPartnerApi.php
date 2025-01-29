@@ -35,6 +35,37 @@ class InventorySellingPartnerApi
         $this->marketplaceId = $configOptions['marketplaceId'];
     }
 
+    function checkDelta() {
+
+        //get all amazon skus
+        //check that the sku exists in the lookup table
+
+        $query = "select distinct seller_sku from listing";
+        $amazonListings = $this->entityManager->getConnection()->prepare($query)->executeQuery()->fetchAllAssociative();
+
+        $amazonListingSkus = [];
+
+        foreach ($amazonListings as $listing) {
+            
+            if (stristr($listing['seller_sku'], "_FBM") !== FALSE) {
+                continue;
+            }
+
+            $amazonListingSkus[] = $listing['seller_sku'];
+        }
+
+        $list = implode("','", $amazonListingSkus);
+
+        $fullList = "('" . $list . "')";
+
+        $query = "select * from amazon_takealot_barcode_lookup where amazon_barcode not in " . $fullList;
+        $missingItems = $this->entityManager->getConnection()->prepare($query)->executeQuery()->fetchAllAssociative();
+
+        print_r($missingItems);
+
+
+    }
+
     function fetchInventoryData()
     {
         // How does listing get populated. 
