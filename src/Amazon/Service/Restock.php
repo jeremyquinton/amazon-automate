@@ -61,9 +61,10 @@ class Restock
 
         //get all the items that are on there way to Amazon.
         $skusOnTheWayToAmazon = $this->getSkusOnTheWayToAmazon();
+        //$skusOnTheWayToAmazon = $this->getSkusOnTheWayToAmazon();
         //$skusOnTheWayToAmazon = [];
 
-        $skusToRestock = $this->getFBAItemsWithNoStockAndHaveSalesHistory();
+        $skusToRestock = $this->getFBAItemsWithNoStock();
         
         $bulkFile = getcwd() . "/ManifestFileUpload_Template_MPL.xlsx";
         
@@ -148,9 +149,6 @@ class Restock
         if (array_key_exists($sku, $this->skuToStockLevel) !== FALSE) {
             return $this->skuToStockLevel[$sku];
         }
-        // else {
-        //     echo $sku . PHP_EOL;
-        // }
 
         return 0;
     }
@@ -159,6 +157,21 @@ class Restock
 
         $query = "select seller_sku from listing where quantity = 0 and fulfilment_channel = 'AMAZON_EU' " . 
                  "and seller_sku in (select sellerSku from amazonOrderItems); ";
+
+        //$query = "select seller_sku from listing";  
+        $rows = $this->entityManager->getConnection()->prepare($query)->executeQuery()->fetchAllAssociative();
+
+        foreach ($rows as $row) {
+            $skusToRestock[] = $row['seller_sku'];
+        }
+
+        return $skusToRestock;
+
+    }
+
+    private function getFBAItemsWithNoStock() {
+
+        $query = "select seller_sku from listing where quantity = 0 and fulfilment_channel = 'AMAZON_EU' ";
 
         //$query = "select seller_sku from listing";  
         $rows = $this->entityManager->getConnection()->prepare($query)->executeQuery()->fetchAllAssociative();
