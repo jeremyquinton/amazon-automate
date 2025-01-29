@@ -8,6 +8,7 @@ use Amazon\Service\InventorySellingPartnerApi;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class InventoryCommand extends Command
@@ -26,12 +27,19 @@ class InventoryCommand extends Command
     protected function configure()
     {
         $this->setName('amazon:fetchinventory')->setDescription('Fetches Our Inventory or Stock Level Info From Amazon.');
-        //$this->addOption('period', null, InputArgument::OPTIONAL);
+        $this->addOption('delta', null, InputArgument::OPTIONAL);
+       
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-       
+        $delta = $input->getOption('delta');
+        
+        if ($delta == 'check') {
+            $this->inventoryOrderService->checkDelta();
+            return Command::SUCCESS;
+        }
+        
         $this->inventoryOrderService->fetchInventoryData();
 
         return Command::SUCCESS;

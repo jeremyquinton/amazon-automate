@@ -93,17 +93,22 @@ class InventorySellingPartnerApi
 
             return $inventoryForSku;
         }
+        try {
+            $listingItem = $this->apiConnector->listingsItemsV20210801();
+            $listingItemResult = $listingItem->getListingsItem('A1OHGF3S9PRL28', $sellerSku, [$this->marketplaceId], 'en_US', ['fulfillmentAvailability']);
+            $listingItemResultDto = $listingItemResult->dto();
 
-        $listingItem = $this->apiConnector->listingsItemsV20210801();
-        $listingItemResult = $listingItem->getListingsItem('A1OHGF3S9PRL28', $sellerSku, [$this->marketplaceId], 'en_US', ['fulfillmentAvailability']);
-        $listingItemResultDto = $listingItemResult->dto();
-
-        if (!empty( $listingItemResultDto->fulfillmentAvailability)) {
-            $inventoryForSku['fulfillmentChannelCode'] = $listingItemResultDto->fulfillmentAvailability[0]->fulfillmentChannelCode;
-            $inventoryForSku['quantity'] =  $listingItemResultDto->fulfillmentAvailability[0]->quantity;
-    
-            return $inventoryForSku;
+            if (!empty( $listingItemResultDto->fulfillmentAvailability)) {
+                $inventoryForSku['fulfillmentChannelCode'] = $listingItemResultDto->fulfillmentAvailability[0]->fulfillmentChannelCode;
+                $inventoryForSku['quantity'] =  $listingItemResultDto->fulfillmentAvailability[0]->quantity;
+        
+                return $inventoryForSku;
+            }
         }
+        catch (Exception $e) {
+            echo $e->getMessage();
+            return FALSE;
+        }    
 
         return FALSE;
         
