@@ -20,6 +20,7 @@ class OrdersSellingPartnerApi
     private $ordersToOrderItems;
 
     //6009714350580
+    //remove it from the lookup table at the same time
     private $oldToNewSku = ['33-AMWN-QJ58' => '9902059200015',
                             '7Y-2MVT-F1WD' => '9902184170788',
                             '9H-9FI9-1CQI' => '9902164116805',
@@ -54,7 +55,10 @@ class OrdersSellingPartnerApi
                             'O8-UAU6-6KIW' => '9902184271850',
                             'OP-FR8M-UTQK' => '9902062631042',
                             'PZ-N1TP-OI27' => '9902027182909',
-                            'UJ-7O2I-ZERL' => '9902184269741']; 
+                            'UJ-7O2I-ZERL' => '9902184269741',
+                            'O4-BV6P-9HAM' => '6009714352751',
+                            'X1-0699-UCAI' => '9902191827781',
+                            ]; 
 
     public function __construct(EntityManagerInterface $entityManager,Config $config)
     {
@@ -123,6 +127,17 @@ class OrdersSellingPartnerApi
         $this->fetchOrders($startDate, $endDate);
         $this->fetchOrderItems();
         $this->processOrdersToDb();
+        $this->dataMigrationFix();
+    }
+
+    private function dataMigrationFix() {
+        //object is immutable so have to just fix database with series of sql queries
+        foreach ($this->oldToNewSku as $oldSku => $newSku) {
+            $query = "update amazonOrderItems set sellerSku='" . $newSku ."' where sellerSku='" . $oldSku . "'";
+            $this->entityManager->getConnection()->prepare($query)->executeQuery();
+            $query = "update amazonOrderItems set sellerSku='" . $newSku ."' where sellerSku='" . $oldSku . "_FBM'";
+            $this->entityManager->getConnection()->prepare($query)->executeQuery();
+        }
     }
 
     private function checkOrderExists($amazonOrderId) {
@@ -193,11 +208,6 @@ class OrdersSellingPartnerApi
 
             sleep(2);
         } 
-        //object is immutable so have to just fix database with series of sql queries
-        foreach ($this->oldToNewSku as $oldSku => $newSku) {
-            $query = "update amazonOrderItems set sellerSku='" . $newSku ."' where sellerSku='" . $oldSku . "'";
-            $this->entityManager->getConnection()->prepare($query)->executeQuery();
-        }
     }
 
     public function processOrdersToDb() {
