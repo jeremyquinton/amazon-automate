@@ -59,11 +59,67 @@ class Restock
 
     public function run() {
 
+        $skusToRestock = $this->getFBAItemsWithNoStock();
+
+        foreach ($skusToRestock as $sku => $item) {
+
+            //great for debugging purposes
+            if ($sku != '9900964646911') {
+            //    continue;
+            }
+
+            if ($this->stockOfItem($sku) == 0) {
+            //    echo "no stock : " . $sku . " " . $item . PHP_EOL;
+                continue;
+            }    
+            $actualItemsToRestock[] = $sku;
+        }
+
+        $barcodeList = "('" . implode("','", $actualItemsToRestock) . "')";
+       
+        $query = "select sellerSku,count(*) as total from amazonOrderItems where sellerSku in " . $barcodeList . " group by sellerSku";
+        $skuToCount = $this->entityManager->getConnection()->prepare($query)->executeQuery()->fetchAllAssociative();
+
+        $skuToCount = array_combine(array_column($skuToCount, 'sellerSku'), array_column($skuToCount, 'total'));
+    
+        foreach ($actualItemsToRestock as $itemToRestock) {
+             
+            if (array_key_exists($itemToRestock, $skuToCount) !== FALSE) {
+                if ($skuToCount[$itemToRestock] > 1) {
+                    echo $itemToRestock .",2" . PHP_EOL; 
+                }    
+            } else {
+               echo $itemToRestock .",1" . PHP_EOL; 
+            }
+
+        }
+
+
+    }
+
+    /**
+     * Have an issue when trying to manipulate an Amazon excel template with php spreadsheet so for now will make a cut and paste something
+     * 
+     * 
+     * 
+     * @return void 
+     * @throws \Doctrine\DBAL\Exception 
+     * @throws \PhpOffice\PhpSpreadsheet\Reader\Exception 
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception 
+     * @throws \Psr\SimpleCache\InvalidArgumentException 
+     * @throws \PhpOffice\PhpSpreadsheet\Exception 
+     * @throws \PhpOffice\PhpSpreadsheet\Calculation\Exception 
+     * @throws \DivisionByZeroError 
+     * @throws \ArithmeticError 
+     */
+    public function run_backup() {
+
         //get all the items that are on there way to Amazon.
         $skusOnTheWayToAmazon = $this->getSkusOnTheWayToAmazon();
         //$skusOnTheWayToAmazon = $this->getSkusOnTheWayToAmazon();
         //$skusOnTheWayToAmazon = [];
 
+        //This here need to check 
         $skusToRestock = $this->getFBAItemsWithNoStock();
         
         $bulkFile = getcwd() . "/ManifestFileUpload_Template_MPL.xlsx";
@@ -77,10 +133,10 @@ class Restock
 
         $counter = 9;
         $itemRestockCounter = 0;
-        foreach ($skusToRestock as $item) {
+        foreach ($skusToRestock as $sku => $itemName) {
 
-            if ($this->stockOfItem($item) == 0) {
-                //echo "no stock : " . $item . PHP_EOL;
+            if ($this->stockOfItem($skusToRestock) == 0) {
+                echo "no stock : " . $skusToRestock . PHP_EOL;
                 continue;
             }
 
@@ -88,8 +144,8 @@ class Restock
             // if (array_search($item, $skusOnTheWayToAmazon) !== FALSE) {
             //     continue;           
             // }
-            echo $item . PHP_EOL;
-            $sheet->setCellValue('A' . $counter, $item);
+            echo $skusToRestock . PHP_EOL;
+            $sheet->setCellValue('A' . $counter, $skusToRestock);
             $sheet->setCellValue('B' . $counter, 1);
 
             $itemRestockCounter++;
@@ -171,13 +227,13 @@ class Restock
 
     private function getFBAItemsWithNoStock() {
 
-        $query = "select seller_sku from listing where quantity = 0 and fulfilment_channel = 'AMAZON_EU' ";
+        $query = "select item_name,seller_sku from listing where quantity = 0 and fulfilment_channel = 'AMAZON_EU' ";
 
         //$query = "select seller_sku from listing";  
         $rows = $this->entityManager->getConnection()->prepare($query)->executeQuery()->fetchAllAssociative();
 
         foreach ($rows as $row) {
-            $skusToRestock[] = $row['seller_sku'];
+            $skusToRestock[$row['seller_sku']] = $row['item_name'];
         }
 
         return $skusToRestock;
