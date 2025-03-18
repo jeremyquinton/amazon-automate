@@ -21,7 +21,7 @@ class OrdersSellingPartnerApi
 
     //6009714350580
     //remove it from the lookup table at the same time
-    private $oldToNewSku = ['33-AMWN-QJ58' => '9902059200015',
+    public $oldToNewSku = ['33-AMWN-QJ58' => '9902059200015',
                             '7Y-2MVT-F1WD' => '9902184170788',
                             '9H-9FI9-1CQI' => '9902164116805',
                             'BC-A1Y5-XF2H' => '9900964646911',
@@ -58,7 +58,21 @@ class OrdersSellingPartnerApi
                             'UJ-7O2I-ZERL' => '9902184269741',
                             'O4-BV6P-9HAM' => '6009714352751',
                             'X1-0699-UCAI' => '9902191827781',
+                            '7I-TH2H-Y5KU' => '9901057582284',
+                            '52-E1DW-GS65' => '',
+                            //below needs fixing
+                            'AQ-4REO-KFVT' => '9902080318291',
+                            'GC-XYMZ-5S0R' => '9902000530543',
+                            'SA-7NPH-GSL7' => '9902031785844',
+                            'TI-03E1-ZYV1' => '9901058590691',
+                            'YO-6ZMU-GT41' => '9902191777574',
+                            '1Y-U1DS-21UA' => '9902096421114',
+                            '2M-U4PM-DSUP' => '9902184271850',
+
                             ]; 
+    //can be correct
+    //AQ-4REO-KFVT
+    //                        
 
     public function __construct(EntityManagerInterface $entityManager,Config $config)
     {
@@ -73,6 +87,7 @@ class OrdersSellingPartnerApi
             endpoint: Endpoint::EU
         );
     }
+
 
     private function getPeriodAsDate($period = false)
     {
@@ -213,6 +228,11 @@ class OrdersSellingPartnerApi
     public function processOrdersToDb() {
 
         foreach ($this->orders as $order) { 
+
+            //stops removal orders causing a problem
+            if ($order->amazonOrderId == "S02-1383135-3178901") {
+                continue; 
+            }
 
             $amazonOrderId = $order->amazonOrderId;
             $fufilmentChannel = $order->fulfillmentChannel;
