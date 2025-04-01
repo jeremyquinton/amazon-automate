@@ -59,8 +59,7 @@ class OrdersSellingPartnerApi
                             'O4-BV6P-9HAM' => '6009714352751',
                             'X1-0699-UCAI' => '9902191827781',
                             '7I-TH2H-Y5KU' => '9901057582284',
-                            '52-E1DW-GS65' => '',
-                            //below needs fixing
+                            '52-E1DW-GS65' => '9902191777581',
                             'AQ-4REO-KFVT' => '9902080318291',
                             'GC-XYMZ-5S0R' => '9902000530543',
                             'SA-7NPH-GSL7' => '9902031785844',
@@ -68,7 +67,40 @@ class OrdersSellingPartnerApi
                             'YO-6ZMU-GT41' => '9902191777574',
                             '1Y-U1DS-21UA' => '9902096421114',
                             '2M-U4PM-DSUP' => '9902184271850',
-
+                            'MM-V8W9-X6WW' => '9902041402359',
+                            'BO-8OQZ-7B0Q' => '9902029501470',
+                            'F9-STTC-0Z67' => '9900572245629',
+                            'GL-D720-M9OP' => '9902160328851',
+                            'D8-UYO5-MKU4' => '9900572245636',
+                            'X3-AMMN-ZVYN' => '9901058683461',
+                            'JG-45M9-PIVN' => '9902043374586',
+                            'F5-Z1YH-Y9VB' => '9902191777543',
+                            'IE-3VVK-3SKU' => '9902041193899',
+                            'WI-5LEM-581' => '9901059104873',
+                            '6T-OM6X-FH4U' => '9902079153483',
+                            'XC-RNEN-83MP' => '9902191827804',
+                            '5E-BFR3-LXI8' => '9902191827798',
+                            'X3-31GF-NTZD' => '9902191827767',
+                            '35-Q33W-TEYN' => '9902191827774',
+                            'WC-XKO8-G2QZ' => '9902018751275',
+                            'T4-SAT5-FV4Q' => '9902080318499',
+                            'BO-8OQZ-7B0Q' => '9902029501470',
+                            '3D-4IKD-R3E7' => '9902017708256',
+                            'JG-45M9-PIVN' => '9902043374586',
+                            'VN-NYXX-CH92' => '9902176777179',
+                            '3G-9ND1-1AFV' => '9902191777543',
+                            'UM-J6B2-VLGM' => '9902191777598',
+                            'Y1-2KH8-ERGT' => '9902191777567',
+                            'F5-Z1YH-Y9VB' => '9902191777543',
+                            '1I-YW9I-69GZ' => '9902191777574',
+                            'YH-8HXY-2R31' => '9900959435902',
+                            'TK-GPOI-T7QQ' => '9901059104873',
+                            'WI-5LEM-581W' => '9901058683461',
+                            'XF-NAZ4-Q6XE' => '9902191777598',
+                            '8J-Y2OJ-5X9E' => '9902033213901',
+                            'LS-F0MT-Z8EU' => '9902079577227',
+                            'ZX-ADX2-0O4S' => '9902071695790',
+                            //''
                             ]; 
     //can be correct
     //AQ-4REO-KFVT
@@ -230,9 +262,11 @@ class OrdersSellingPartnerApi
         foreach ($this->orders as $order) { 
 
             //stops removal orders causing a problem
-            if ($order->amazonOrderId == "S02-1383135-3178901") {
-                continue; 
+            if ($order->salesChannel == 'Non-Amazon') {
+                continue;
             }
+
+            echo $order->salesChannel . PHP_EOL;
 
             $amazonOrderId = $order->amazonOrderId;
             $fufilmentChannel = $order->fulfillmentChannel;
