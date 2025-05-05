@@ -11,6 +11,7 @@ This file right at the top I have added two lines
 vendor/jlevers/selling-partner-api/src/Traits/Deserializes.php
  'Y-m-d\TH:i:s.u\Z',
  ''
+ 
 Need to get the library patched. For now we use the deployment tool to exclude this file.
 Should write a bug report for this at some point
 
@@ -195,6 +196,7 @@ delete from listing where seller_sku='UJ-7O2I-ZERL';
 delete from amazon_takealot_barcode_lookup where amazon_barcode='UJ-7O2I-ZERL';
 delete from listing where seller_sku='O4-BV6P-9HAM_FBM';
 delete from listing where seller_sku='O4-BV6P-9HAM';
+
 delete from amazon_takealot_barcode_lookup where amazon_barcode='O4-BV6P-9HAM';
 delete from amazon_takealot_barcode_lookup where amazon_barcode='BC-A1Y5-XF2H';
 
