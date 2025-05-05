@@ -100,11 +100,8 @@ class OrdersSellingPartnerApi
                             '8J-Y2OJ-5X9E' => '9902033213901',
                             'LS-F0MT-Z8EU' => '9902079577227',
                             'ZX-ADX2-0O4S' => '9902071695790',
-                            //''
-                            ]; 
-    //can be correct
-    //AQ-4REO-KFVT
-    //                        
+                            'VT-Q5UF-8KOX' => '9902191827781',
+                            ];                     
 
     public function __construct(EntityManagerInterface $entityManager,Config $config)
     {
@@ -182,7 +179,7 @@ class OrdersSellingPartnerApi
         foreach ($this->oldToNewSku as $oldSku => $newSku) {
             $query = "update amazonOrderItems set sellerSku='" . $newSku ."' where sellerSku='" . $oldSku . "'";
             $this->entityManager->getConnection()->prepare($query)->executeQuery();
-            $query = "update amazonOrderItems set sellerSku='" . $newSku ."' where sellerSku='" . $oldSku . "_FBM'";
+            $query = "update amazonOrderItems set sellerSku='" . $newSku ."' where sellerSku='" . $oldSku . "-FBM'";
             $this->entityManager->getConnection()->prepare($query)->executeQuery();
         }
     }
