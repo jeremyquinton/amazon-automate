@@ -182,6 +182,9 @@ class Restock
             if (array_key_exists($itemToRestock, $skuToCount) !== FALSE) {
                 if ($skuToCount[$itemToRestock] > 1) {
                     echo $itemToRestock .",2" . PHP_EOL; 
+                }
+                else {
+                    echo $itemToRestock .",1" . PHP_EOL; 
                 }    
             } else {
                echo $itemToRestock .",1" . PHP_EOL; 
