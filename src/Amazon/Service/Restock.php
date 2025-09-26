@@ -150,13 +150,12 @@ class Restock
         foreach ($skusToRestock as $sku => $item) {
 
             //great for debugging purposes
-            if ($sku != '9902031717920') {
-               // continue;
+            if ($sku != '9902017748245') {
+               //continue;
             }
-
-            //echo "testing " . PHP_EOL;
-
-            if ($this->stockOfItem($sku) == 0) {
+     
+            if ($this->stockOfItem($sku) <= 0) {
+                echo "stock of item : " . $sku . PHP_EOL;
                 $amazonItemsOutOfStock = new AmazonItemsOutOfStock();
                 $amazonItemsOutOfStock->setProductName($item);
                 $amazonItemsOutOfStock->setSellerSku($sku);
@@ -176,9 +175,9 @@ class Restock
         $skuToCount = $this->entityManager->getConnection()->prepare($query)->executeQuery()->fetchAllAssociative();
 
         $skuToCount = array_combine(array_column($skuToCount, 'sellerSku'), array_column($skuToCount, 'total'));
-    
+
         foreach ($actualItemsToRestock as $itemToRestock) {
-             
+
             if (array_key_exists($itemToRestock, $skuToCount) !== FALSE) {
                 if ($skuToCount[$itemToRestock] > 1) {
                     echo $itemToRestock .",2" . PHP_EOL; 
