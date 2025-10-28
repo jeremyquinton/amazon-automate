@@ -28,18 +28,24 @@ class InventoryCommand extends Command
     {
         $this->setName('amazon:fetchinventory')->setDescription('Fetches Our Inventory or Stock Level Info From Amazon.');
         $this->addOption('delta', null, InputArgument::OPTIONAL);
+        $this->addOption('sku', null, InputArgument::OPTIONAL, 'The SKU of the product to fetch inventory for.');
        
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $delta = $input->getOption('delta');
-        
+        $sku = $input->getOption('sku');
+
         if ($delta == 'check') {
             $this->inventoryOrderService->checkDelta();
             return Command::SUCCESS;
         }
         
+        if (!empty($sku)) {
+            $this->inventoryOrderService->fetchInventoryData($sku);
+            return Command::SUCCESS;
+        }
         $this->inventoryOrderService->fetchInventoryData();
 
         return Command::SUCCESS;

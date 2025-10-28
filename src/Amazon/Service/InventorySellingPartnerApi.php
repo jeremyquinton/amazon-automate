@@ -66,15 +66,18 @@ class InventorySellingPartnerApi
 
     }
 
-    function fetchInventoryData()
+    function fetchInventoryData($sku = null)
     {
         // How does listing get populated. 
         // NOTE : Good for debugging different api
         //$listings[0]['seller_sku'] = 'BK-PT6K-RR12';
-        
-        $query = "select * from listing where last_updated_date < DATE_SUB(NOW(), INTERVAL 6 HOUR) or last_updated_date is null";
-        $listings = $this->entityManager->getConnection()->prepare($query)->executeQuery()->fetchAllAssociative();
-
+        if (!empty($sku)) {
+            $listings = [];
+            $listings[0]['seller_sku'] = $sku;
+        } else {    
+            $query = "select * from listing where last_updated_date < DATE_SUB(NOW(), INTERVAL 6 HOUR) or last_updated_date is null";
+            $listings = $this->entityManager->getConnection()->prepare($query)->executeQuery()->fetchAllAssociative();
+        }
         //unset($listings);
         //$listings[0]['seller_sku'] = 'B0CYLSJSVQ';
 
