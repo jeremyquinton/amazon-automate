@@ -204,7 +204,7 @@ class Restock
 
             //will be items with no sales history and slow sales with no stock at Amazon still send 1 off
             if ($item['quantity_to_restock'] <= 0 && $item['quantity'] == 0) {
-                echo $item['seller_sku'] . "," . $item['quantity_to_restock'] . PHP_EOL;
+                echo $item['seller_sku'] . ",1" . PHP_EOL;
                 $counter++;
                 continue;
             }
@@ -217,12 +217,12 @@ class Restock
             }
             else {
                 //echo $item['seller_sku'] . " : " . $item['item_name'] . " : " . $item['quantity_to_restock'] . PHP_EOL;
-                $counter++;
+                //$counter++;
             }
 
         }
 
-       //echo $counter . " items to restock" . PHP_EOL;
+        echo $counter . " items to restock" . PHP_EOL;
     }
 
     /**
