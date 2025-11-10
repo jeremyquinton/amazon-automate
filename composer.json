@@ -11,7 +11,7 @@
         "doctrine/doctrine-bundle": "^2.12",
         "doctrine/doctrine-migrations-bundle": "^3.3",
         "doctrine/orm": "^3.2",
-        "jlevers/selling-partner-api": "7.0.1",
+        "jlevers/selling-partner-api": "7.4.3",
         "laminas/laminas-servicemanager": "*",
         "phpoffice/phpspreadsheet": "^3.3",
         "symfony/console": "7.1.*",
