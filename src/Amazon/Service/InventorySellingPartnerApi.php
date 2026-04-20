@@ -100,13 +100,13 @@ class InventorySellingPartnerApi
                 $listingObject = new Listing();
             }
 
-            $listingObject->setQuantity($summary['quantity']);
+            $listingObject->setAmazonWarehouseStock($summary['amazon_warehouse_stock']);
             $listingObject->setLastUpdatedDate(new \DateTime());
 
             $this->entityManager->persist($listingObject);
             $this->entityManager->flush();
 
-            sleep(1);
+            //sleep(1);
         }
     }
     
@@ -129,10 +129,11 @@ class InventorySellingPartnerApi
             // print_r($listingItem->dto()->payload->inventorySummaries[0]);
             // exit();
 
-            $inventoryForSku['quantity'] = $listingItem->dto()->payload->inventorySummaries[0]->totalQuantity;
+            $inventoryForSku['amazon_warehouse_stock'] = $listingItem->dto()->payload->inventorySummaries[0]->totalQuantity;
 
             return $inventoryForSku;
         }
+
         try {
             $listingItem = $this->apiConnector->listingsItemsV20210801();
             $listingItemResult = $listingItem->getListingsItem('A1OHGF3S9PRL28', $sellerSku, [$this->marketplaceId], 'en_US', ['fulfillmentAvailability']);
@@ -140,7 +141,7 @@ class InventorySellingPartnerApi
 
             if (!empty( $listingItemResultDto->fulfillmentAvailability)) {
                 $inventoryForSku['fulfillmentChannelCode'] = $listingItemResultDto->fulfillmentAvailability[0]->fulfillmentChannelCode;
-                $inventoryForSku['quantity'] =  $listingItemResultDto->fulfillmentAvailability[0]->quantity;
+                $inventoryForSku['amazon_warehouse_stock'] =  $listingItemResultDto->fulfillmentAvailability[0]->quantity;
         
                 return $inventoryForSku;
             }

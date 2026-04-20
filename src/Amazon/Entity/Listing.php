@@ -30,7 +30,7 @@ class Listing
     private ?float $price = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $quantity = null;
+    private ?int $amazon_warehouse_stock = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $open_date = null;
@@ -151,14 +151,14 @@ class Listing
         return $this;
     }
 
-    public function getQuantity(): ?int
+    public function getAmazonWarehouseStock(): ?int
     {
-        return $this->quantity;
+        return $this->amazon_warehouse_stock;
     }
 
-    public function setQuantity(?int $quantity): static
+    public function setAmazonWarehouseStock(?int $amazon_warehouse_stock): static
     {
-        $this->quantity = $quantity;
+        $this->amazon_warehouse_stock = $amazon_warehouse_stock;
 
         return $this;
     }

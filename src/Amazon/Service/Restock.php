@@ -3,6 +3,7 @@
 namespace Amazon\Service;
 
 use Amazon\Entity\AmazonItemsOutOfStock;
+use Amazon\Entity\RestockItem;
 use Doctrine\ORM\EntityManagerInterface;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -106,7 +107,7 @@ class Restock
     {
 
         //get all products with sales
-        $query = "select seller_sku,item_name,quantity,fulfilment_channel from listing";
+        $query = "select seller_sku,item_name,amazon_warehouse_stock,fulfilment_channel from listing";
         $rows = $this->entityManager->getConnection()->prepare($query)->executeQuery()->fetchAllAssociative();
 
         $this->allListings = [];
@@ -135,7 +136,7 @@ class Restock
 
             
             //items to stock at Amazon
-            echo $this->allListings[$nonFBMSKU]['seller_sku'] . "," . $this->allListings[$nonFBMSKU]['item_name'] . "," . $this->allListings[$nonFBMSKU]['quantity'] . PHP_EOL;
+            echo $this->allListings[$nonFBMSKU]['seller_sku'] . "," . $this->allListings[$nonFBMSKU]['item_name'] . "," . $this->allListings[$nonFBMSKU]['amazon_warehouse_stock'] . PHP_EOL;
 
         }
     }
@@ -143,6 +144,9 @@ class Restock
     public function run() {
 
         $query = "truncate amazonItemsOutOfStock";
+        $this->entityManager->getConnection()->prepare($query)->executeQuery();
+
+        $query = "truncate restock_items";
         $this->entityManager->getConnection()->prepare($query)->executeQuery();
 
         $query = "update listing set sales_last_2_months_quantity = 0";
@@ -159,7 +163,7 @@ class Restock
             $this->entityManager->getConnection()->prepare($query)->executeQuery([$row['c'], $row['sellerSku']]);
         }
 
-        $query = "UPDATE listing SET quantity_to_restock = COALESCE(sales_last_2_months_quantity, 0) - COALESCE(quantity, 0);";
+        $query = "UPDATE listing SET quantity_to_restock = COALESCE(sales_last_2_months_quantity, 0) - COALESCE(amazon_warehouse_stock, 0);";
         $this->entityManager->getConnection()->prepare($query)->executeQuery();
 
         //gets all the fba items with no stock
@@ -194,6 +198,16 @@ class Restock
         $query = "select * from listing where seller_sku in " . $barcodeList;
         $allItems = $this->entityManager->getConnection()->prepare($query)->executeQuery()->fetchAllAssociative();
 
+        // Get last 30 days sales per SKU
+        $salesLast30Query = "select sellerSku, count(*) as c from amazonOrders ao " .
+                            "inner join amazonOrderItems aoi on ao.id = aoi.orderId " .
+                            "where purchaseDate > " . strtotime("-30 days") . " group by sellerSku";
+        $salesLast30Rows = $this->entityManager->getConnection()->prepare($salesLast30Query)->executeQuery()->fetchAllAssociative();
+        $salesLast30 = [];
+        foreach ($salesLast30Rows as $row) {
+            $salesLast30[$row['sellerSku']] = (int)$row['c'];
+        }
+
         $counter = 0; 
         foreach ($allItems as $item) {
 
@@ -202,25 +216,37 @@ class Restock
                 //continue;
             }
 
+            $itemsToSend = 0;
+
             //will be items with no sales history and slow sales with no stock at Amazon still send 1 off
-            if ($item['quantity_to_restock'] <= 0 && $item['quantity'] == 0) {
-                echo $item['seller_sku'] . ",1" . PHP_EOL;
-                $counter++;
+            if ($item['quantity_to_restock'] <= 0 && $item['amazon_warehouse_stock'] == 0) {
+                $itemsToSend = 1;
+            } elseif ($item['quantity_to_restock'] > 0) {
+                $itemsToSend = (int)$item['quantity_to_restock'];
+            } else {
                 continue;
             }
 
-            if ($item['quantity_to_restock'] > 0) {
-                //echo $item['seller_sku'] . " : " . $item['item_name'] . " : " . $item['quantity_to_restock'] . " " . $item['sales_last_2_months_quantity'] . PHP_EOL;
-                echo $item['seller_sku'] . "," . $item['quantity_to_restock'] . PHP_EOL;
-                $counter++;
-                continue;
-            }
-            else {
-                //echo $item['seller_sku'] . " : " . $item['item_name'] . " : " . $item['quantity_to_restock'] . PHP_EOL;
-                //$counter++;
-            }
+            $sku = $item['seller_sku'];
+            $last30Sales = $salesLast30[$sku] ?? 0;
+            $dailySales = $last30Sales / 30;
+            $stockDaysCover = ($dailySales > 0) ? (int)round((int)$item['amazon_warehouse_stock'] / $dailySales) : 0;
 
+            $restockItem = new RestockItem();
+            $restockItem->setTitle($item['item_name']);
+            $restockItem->setSku($sku);
+            $restockItem->setMySoh($this->stockOfItem($sku));
+            $restockItem->setTotalSalesLast30Days($last30Sales);
+            $restockItem->setTotalStockDaysCover($stockDaysCover);
+            $restockItem->setItemsToSend($itemsToSend);
+
+            $this->entityManager->persist($restockItem);
+
+            echo $sku . "," . $itemsToSend . PHP_EOL;
+            $counter++;
         }
+
+        $this->entityManager->flush();
 
         echo $counter . " items to restock" . PHP_EOL;
     }
@@ -339,7 +365,7 @@ class Restock
 
     private function getFBAItemsWithNoStockAndHaveSalesHistory() {
 
-        $query = "select seller_sku from listing where quantity = 0 and fulfilment_channel = 'AMAZON_EU' " . 
+        $query = "select seller_sku from listing where amazon_warehouse_stock = 0 and fulfilment_channel = 'AMAZON_EU' " . 
                  "and seller_sku in (select sellerSku from amazonOrderItems); ";
 
         //$query = "select seller_sku from listing";  
@@ -408,10 +434,13 @@ class Restock
 
     private function listingHasStock($listing) {
         
-        if ($listing['quantity'] > 0) {
+        if ($listing['amazon_warehouse_stock'] > 0) {
             return TRUE;
         }
         
         return FALSE;
     }
 }
+
+
+

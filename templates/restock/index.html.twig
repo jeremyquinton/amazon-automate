@@ -1,0 +1,104 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Amazon Restock{% endblock %}
+
+{% block stylesheets %}
+<style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+    h1 { color: #232f3e; }
+    .actions { margin: 20px 0; }
+    .btn { display: inline-block; padding: 10px 20px; color: #fff; text-decoration: none; border-radius: 4px; border: none; cursor: pointer; font-size: 14px; }
+    .btn-primary { background: #ff9900; }
+    .btn-primary:hover { background: #e88a00; }
+    .btn-download { background: #146eb4; }
+    .btn-download:hover { background: #0f5a94; }
+    table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #ddd; }
+    th { background: #232f3e; color: #fff; }
+    tr:hover { background: #f9f9f9; }
+    .summary { margin: 20px 0; padding: 15px; background: #fff; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .file-list { margin-top: 30px; }
+    .file-list h2 { color: #232f3e; }
+    .file-list table th { background: #37475a; }
+    .flash-success { padding: 10px 15px; background: #d4edda; color: #155724; border-radius: 4px; margin-bottom: 15px; }
+</style>
+{% endblock %}
+
+{% block body %}
+<h1>Amazon Restock Items</h1>
+
+{% for message in app.flashes('success') %}
+    <div class="flash-success">{{ message }}</div>
+{% endfor %}
+
+<div class="summary">
+    <strong>Total items to restock:</strong> {{ restockItems|length }}
+</div>
+
+<div class="actions">
+    <form method="post" action="{{ path('restock_generate_file') }}" style="display:inline;">
+        <button type="submit" class="btn btn-primary">Generate Amazon Upload File</button>
+    </form>
+</div>
+
+{% if restockItems|length > 0 %}
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>SKU</th>
+            <th>Title</th>
+            <th>My SOH</th>
+            <th>Sales (30 days)</th>
+            <th>Stock Days Cover</th>
+            <th>Items to Send</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in restockItems %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ item.sku }}</td>
+            <td>{{ item.title }}</td>
+            <td>{{ item.mySoh }}</td>
+            <td>{{ item.totalSalesLast30Days }}</td>
+            <td>{{ item.totalStockDaysCover }}</td>
+            <td>{{ item.itemsToSend }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No restock items found. Run <code>php bin/console amazon:restock</code> first.</p>
+{% endif %}
+
+<div class="file-list">
+    <h2>Generated Manifest Files</h2>
+    {% if manifestFiles|length > 0 %}
+    <table>
+        <thead>
+            <tr>
+                <th>Filename</th>
+                <th>Items</th>
+                <th>Created</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for file in manifestFiles %}
+            <tr>
+                <td>{{ file.filename }}</td>
+                <td>{{ file.itemCount }}</td>
+                <td>{{ file.createdAt|date('Y-m-d H:i:s') }}</td>
+                <td>
+                    <a href="{{ path('restock_download_file', {id: file.id}) }}" class="btn btn-download">Download</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No manifest files generated yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
